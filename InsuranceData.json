@@ -1,0 +1,80 @@
+﻿{
+  "Customers": [
+    {
+      "CustomerID": "C940324",
+      "FirstName": "Jacob",
+      "LastName": "Ethan",
+      "MobileNumber": 6498900170,
+      "AlternateMobileNumber": 7327334513,
+      "EmailID": "Jacob.Ethan@gmail.com",
+      "CurrentAddress": "300 BOYLSTON AVE E SEATTLE WA 98102",
+      "Insurance": [
+        {
+          "Type": "Term Insurance Policy",
+          "PolicyNumber": "MTI251431",
+          "PremiumDueDate": "17/Mar/2017",
+          "PremiumDueAmount": 443,
+          "LastPaidPremiumDate": "7/Nov/2016",
+          "NoOfPremiumsToBePaid": "7/Nov/2016",
+          "PremiumPayingFrequency": "Half-yearly"
+        },
+        {
+          "Type": "Health Insurance Policy",
+          "PolicyNumber": "MHI490685",
+          "PremiumDueDate": "24/Mar/2017",
+          "PremiumDueAmount": 393,
+          "LastPaidPremiumDate": "14/Nov/2016",
+          "NoOfPremiumsToBePaid": "14/Nov/2016",
+          "PremiumPayingFrequency": "Half-yearly"
+        },
+        {
+          "Type": "Investment Linked Policy",
+          "PolicyNumber": "MII866166",
+          "PremiumDueDate": "17/Mar/2017",
+          "PremiumDueAmount": 443,
+          "LastPaidPremiumDate": "7/Nov/2016",
+          "NoOfPremiumsToBePaid": "7/Nov/2016",
+          "PremiumPayingFrequency": "Half-yearly"
+        }
+      ]
+    },
+    {
+      "CustomerID": "C324531",
+      "FirstName": "Daniel",
+      "LastName": "Anthony",
+      "MobileNumber": 6506384093,
+      "AlternateMobileNumber": 7334818436,
+      "EmailID": "Daniel.Anthony@gmail.com",
+      "CurrentAddress": "87 GALENA DRIVE HILLSDALE KEYSTONE AL 35007",
+      "Insurance": [
+        {
+          "Type": "Term Insurance Policy",
+          "PolicyNumber": "MTI259863",
+          "PremiumDueDate": "9/Apr/2017",
+          "PremiumDueAmount": 600,
+          "LastPaidPremiumDate": "3/Feb/2017",
+          "NoOfPremiumsToBePaid": "23/Apr/2043",
+          "PremiumPayingFrequency": "Quarterly"
+        },
+        {
+          "Type": "Health Insurance Policy",
+          "PolicyNumber": "MHI499117",
+          "PremiumDueDate": "23/Apr/2017",
+          "PremiumDueAmount": 593,
+          "LastPaidPremiumDate": "17/Feb/2017",
+          "NoOfPremiumsToBePaid": "17/Feb/2017",
+          "PremiumPayingFrequency": "Quarterly"
+        },
+        {
+          "Type": "Investment Linked Policy",
+          "PolicyNumber": "MII874598",
+          "PremiumDueDate": "16/Apr/2017",
+          "PremiumDueAmount": 643,
+          "LastPaidPremiumDate": "10/Feb/2017",
+          "NoOfPremiumsToBePaid": "10/Feb/2017",
+          "PremiumPayingFrequency": "Quarterly"
+        }
+      ]
+    }
+  ]
+}
