@@ -79,8 +79,6 @@ function premiumOperation(session, results, next) {
     } else if (results.response.index == 3) {
         session.send("Operation for " + results.response.entity)
     } else if (results.response.index == 4) {
-        session.send("Operation for " + results.response.entity)
-
         var cards = insuranceData.Customers.map(function (iData) {
             if (iData.CustomerID === customerId)
                 return createPremiumOperationCard(session, iData.Insurance)
