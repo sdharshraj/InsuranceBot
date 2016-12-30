@@ -11,23 +11,22 @@ var insuranceData = require('./InsuranceData.json');
 var pid = "";
 
 module.exports = dialog
-    .matches('Greet', [greet, authenticate, validateCustomer, policies])
-    .onDefault([NotUnderstood]);
+    .matches('Greet', [greet, helpOption, authenticate, validateCustomer, policies, service, premiumOperation])
+    .matches('No', no)
+    .matches('Yes', yes)
+    .onDefault([NotUnderstood])
 
 function greet(session, args, next) {
     session.send(prompts.userWelcomeMessage);
+    next();
+}
+
+function helpOption(session, args, next) {
     builder.Prompts.choice(session, 'I can help you with the the following things: Please choose one', serviceType);
 }
 
-function service(session, results, next) {
-}
-
-function NotUnderstood(session, args) {
-    session.send("Sorry i could not understand.");
-}
-
 function authenticate(session, args, next) {
-    builder.Prompts.text(session, "I will do it for you, May i know your customerId.");
+        builder.Prompts.text(session, "I will do it for you, May i know your customerId.");
 }
 
 function validateCustomer(session, results, next) {
@@ -42,8 +41,7 @@ function validateCustomer(session, results, next) {
         })
     }
     else {
-        session.send("Sorry this id is not registered with us.");
-        authenticate(session);
+        session.endDialog("Incorrect Customer id please try again.");
     }
 }
 
@@ -51,30 +49,98 @@ function policies(session, args, next) {
     var customerId = session.userData.CID;
     var mssg = "";
     session.send("Thanks for authentication , You have the following policies with us:");
-    insuranceData.Customers.map(function (iData) {
-        if (iData.CustomerID === customerId) {
-            for (var i = 0; i < iData.Insurance.length; i++) {
-                mssg += "\nInsurance Type " + iData.Insurance[i].Type + " - " + iData.Insurance[i].PolicyNumber;
-            }
-             session.send(mssg);
-        }
+    var cards;
+    cards = insuranceData.Customers.map(function (iData) {
+        if (iData.CustomerID === customerId)
+            return createCard(session, iData.Insurance)
     })
-
-    builder.Prompts.choice(session,"I can help with the following:", serviceRequest);
+    var message = new builder.Message(session).attachments(cards[0]).attachmentLayout('carousel');
+    session.send(message);
+    builder.Prompts.choice(session, "I can help with the following:", serviceRequest);
 }
 
-function createCard(session, items) {
-    var card = new builder.HeroCard(session);
-    card.title(items.Type);
-    card.subtitle(items.Name);
-    card.images([builder.CardImage.create(session, items.ImagePath)]);
-    card.tap(new builder.CardAction.openUrl(session, items.URL));
-    card.buttons([new builder.CardAction.openUrl(session, items.URL, '  Buy it Online  ')
-        , new builder.CardAction.imBack(session, items.ProductId, '  Buy it offline  ')
-        , new builder.CardAction.openUrl(session, items.URL, '  See more details  ')]
-    );
+function service(session, results, next) {
+    if (results.response.index == 0) {
+        builder.Prompts.choice(session, "I can help with the following:", premiumOperations);
+    }
+    else {
+        session.send(results.response.entity + "something check the operations");
+    }
+}
 
-    return card;
+function premiumOperation(session, results, next) {
+    var customerId = session.userData.CID;
+    if (results.response.index == 0) {
+        session.send("Operation for " + results.response.entity)
+    } else if (results.response.index == 1) {
+        session.send("Operation for " + results.response.entity)
+    } else if (results.response.index == 2) {
+        session.send("Operation for " + results.response.entity)
+    } else if (results.response.index == 3) {
+        session.send("Operation for " + results.response.entity)
+    } else if (results.response.index == 4) {
+        session.send("Operation for " + results.response.entity)
+
+        var cards = insuranceData.Customers.map(function (iData) {
+            if (iData.CustomerID === customerId)
+                return createPremiumOperationCard(session, iData.Insurance)
+        })
+        var message = new builder.Message(session).attachments(cards[0]).attachmentLayout('carousel');
+        session.send(message);
+        var mssg = "Thank you. Please note your reference ID: 453232 \nWe have sent a confirmation mail to your registered email ID. \n You can connect with us @ toll free number 1800 123 4567 at any time for your requests.";
+        session.send(mssg);
+
+        session.userData.step = "premiumOperation";
+        askAnything(session);
+    } else {
+        session.endDialogWithResult(results);
+    }
+}
+
+function createCard(session, insData) {
+    var cards = [];
+    for (var i = 0; i < insData.length; i++) {
+        var card = new builder.HeroCard(session);
+        card.title(insData[i].Type);
+        card.subtitle("Policy Number : " + insData[i].PolicyNumber);
+
+        cards.push(card);
+    }
+    return cards;
+}
+
+function createPremiumOperationCard(session, premiumData) {
+    var cards = [];
+    for (var i = 0; i < premiumData.length; i++) {
+        var card = new builder.HeroCard(session);
+        card.title(premiumData[i].Type + " - " + premiumData[i].PolicyNumber);
+        card.subtitle("Premium Amount : (" + premiumData[i].PremiumPayingFrequency + ") : Rs. " + premiumData[i].PremiumDueAmount + "/-");
+        cards.push(card);
+    }
+    return cards;
+}
+
+function askAnything(session) {
+    session.send("Would you like any other support?");
+}
+
+function NotUnderstood(session, args) {
+    session.endDialog("Sorry i could not understand.");
+}
+
+function no(session) {
+    if (session.userData.step === "premiumOperation")
+        session.endDialog("Thanks for reaching out to us. Have a Good Day! ");
+    else
+        NotUnderstood(session);
+}
+
+function yes(session, args) {
+    if (session.userData.step === "premiumOperation") {
+        session.endDialog("We will be happy to help you.");
+    }
+    else
+        NotUnderstood(session);
 }
 
 var serviceType = [
@@ -86,4 +152,12 @@ var serviceRequest = [
     'Premium related changes and enquiries',
     'Profile changes',
     'Fund Switch and Premium Redirection'
+]
+
+var premiumOperations = [
+    'Change in Premium Frequency',
+    'Premium Calendar',
+    'Details of Last Paid Premium',
+    'Number of Premiums to be paid',
+    'Due dates and Amount related'
 ]
