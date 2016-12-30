@@ -11,10 +11,12 @@ var insuranceData = require('./InsuranceData.json');
 var pid = "";
 
 module.exports = dialog
-    .matches('Greet', [greet, helpOption, authenticate, validateCustomer, policies, service, premiumOperation])
+    .matches('Greet', [greet, helpOption, authenticate, validateCustomer, validateOtp, policies, service, premiumOperation])
     .matches('No', no)
     .matches('Yes', yes)
+    .matches('PremiumDueAmount',[premiumDueAmount, authenticate])
     .onDefault([NotUnderstood])
+
 
 function greet(session, args, next) {
     session.send(prompts.userWelcomeMessage);
@@ -36,15 +38,21 @@ function validateCustomer(session, results, next) {
             if (iData.CustomerID === validCustomerId[0]) {
                 session.userData.CID = iData.CustomerID;
                 session.send("Hello " + iData.FirstName + " " + iData.LastName);
-                next();
+                builder.Prompts.text(session, "Before I can share the details with you can I ask for the OTP sent to your registered mobile number ******" + iData.MobileNumber%10000 + " & registered email id: " + iData.EmailID + " for verification purpose. Please enter the OTP.");
             }
         })
     }
     else {
-        session.endDialog("Incorrect Customer id please try again.");
+        //to be implemented
+        //verify customerID and proceed
+        session.send("Customer ID is not available.");
     }
 }
 
+function validateOtp(session, results, next){
+    //verify OTP
+    next();
+}
 function policies(session, args, next) {
     var customerId = session.userData.CID;
     var mssg = "";
@@ -139,6 +147,27 @@ function yes(session, args) {
     }
     else
         NotUnderstood(session);
+}
+
+function premiumDueAmount(session, args, next){
+    var customerId = session.userData.CID;
+   if(customerId){
+       var cards = insuranceData.Customers.map(function (iData) {
+            if (iData.CustomerID === customerId)
+                return createPremiumOperationCard(session, iData.Insurance)
+        })
+        var message = new builder.Message(session).attachments(cards[0]).attachmentLayout('carousel');
+        session.send(message);
+        var mssg = "Thank you. Please note your reference ID: 453232 \nWe have sent a confirmation mail to your registered email ID. \n You can connect with us @ toll free number 1800 123 4567 at any time for your requests.";
+        session.send(mssg);
+
+        session.userData.step = "premiumOperation";
+        askAnything(session);
+   }
+   else{
+       session.beginDialog('/verifyCid');
+   }
+        
 }
 
 var serviceType = [
