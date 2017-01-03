@@ -14,9 +14,8 @@ module.exports = dialog
     .matches('Greet', [greet, helpOption, authenticate, validateCustomer, validateOtp, policies, service, premiumOperation])
     .matches('No', no)
     .matches('Yes', yes)
-    .matches('PremiumDueAmount',[premiumDueAmount, authenticate])
+    .matches('PremiumDueAmount', [premiumDueAmount, authenticate, validateCustomer,validateOtp, premiumDueAmount])
     .onDefault([NotUnderstood])
-
 
 function greet(session, args, next) {
     session.send(prompts.userWelcomeMessage);
@@ -28,28 +27,30 @@ function helpOption(session, args, next) {
 }
 
 function authenticate(session, args, next) {
-        builder.Prompts.text(session, "I will do it for you, May i know your customerId.");
+    builder.Prompts.text(session, "I will do it for you, May i know your customerId.");
 }
 
 function validateCustomer(session, results, next) {
-    var validCustomerId = results.response.match('\\b[Cc]?[0-9]{6,6}\\b');
-    if (validCustomerId != null) {
-        insuranceData.Customers.map(function (iData) {
-            if (iData.CustomerID === validCustomerId[0]) {
-                session.userData.CID = iData.CustomerID;
-                session.send("Hello " + iData.FirstName + " " + iData.LastName);
-                builder.Prompts.text(session, "Before I can share the details with you can I ask for the OTP sent to your registered mobile number ******" + iData.MobileNumber%10000 + " & registered email id: " + iData.EmailID + " for verification purpose. Please enter the OTP.");
-            }
-        })
+    if (results && results.response) {
+        var validCustomerId = results.response.match('\\b[Cc]?[0-9]{6,6}\\b');
+        if (validCustomerId != null) {
+            insuranceData.Customers.map(function (iData) {
+                if (iData.CustomerID === validCustomerId[0]) {
+                    session.userData.CID = iData.CustomerID;
+                    session.send("Hello " + iData.FirstName + " " + iData.LastName);
+                    builder.Prompts.text(session, "Before I can share the details with you can I ask for the OTP sent to your registered mobile number ******" + iData.MobileNumber % 10000 + " & registered email id: " + iData.EmailID + " for verification purpose. Please enter the OTP.");
+                }
+            })
+        }
+        else {
+            builder.Prompts.text(session, "Invalid customer Id please enter correct customerId.");
+        }
     }
-    else {
-        //to be implemented
-        //verify customerID and proceed
-        session.send("Customer ID is not available.");
-    }
+    else
+    builder.Prompts.text(session, "please enter correct customerId.");
 }
 
-function validateOtp(session, results, next){
+function validateOtp(session, results, next) {
     //verify OTP
     next();
 }
@@ -149,10 +150,10 @@ function yes(session, args) {
         NotUnderstood(session);
 }
 
-function premiumDueAmount(session, args, next){
+function premiumDueAmount(session, args, next) {
     var customerId = session.userData.CID;
-   if(customerId){
-       var cards = insuranceData.Customers.map(function (iData) {
+    if (customerId) {
+        var cards = insuranceData.Customers.map(function (iData) {
             if (iData.CustomerID === customerId)
                 return createPremiumOperationCard(session, iData.Insurance)
         })
@@ -163,11 +164,11 @@ function premiumDueAmount(session, args, next){
 
         session.userData.step = "premiumOperation";
         askAnything(session);
-   }
-   else{
-       session.beginDialog('/verifyCid');
-   }
-        
+    }
+    else {
+        next();
+    }
+
 }
 
 var serviceType = [
