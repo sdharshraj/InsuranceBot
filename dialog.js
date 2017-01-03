@@ -6,15 +6,15 @@ var prompts = require('./prompt.js');
 
 var model = process.env.LUIS_MODEL;
 var recognizer = new builder.LuisRecognizer(model)
-var dialog = new builder.IntentDialog({ recognizers: [recognizer] });
+var intentDialog = new builder.IntentDialog({ recognizers: [recognizer] });
 var insuranceData = require('./InsuranceData.json');
 var pid = "";
 
-module.exports = dialog
+module.exports = intentDialog
     .matches('Greet', [greet, helpOption, authenticate, validateCustomer, validateOtp, policies, service, premiumOperation])
+    .matches('PremiumDueAmount', [premiumDueAmount, authenticate, validateCustomer,validateOtp, premiumDueAmount])
     .matches('No', no)
     .matches('Yes', yes)
-    .matches('PremiumDueAmount', [premiumDueAmount, authenticate, validateCustomer,validateOtp, premiumDueAmount])
     .onDefault([NotUnderstood])
 
 function greet(session, args, next) {
@@ -43,7 +43,9 @@ function validateCustomer(session, results, next) {
             })
         }
         else {
+            //Need to work on the validation. It is skipping the step to validate. From here it is directly going to next function having customer id null.
             builder.Prompts.text(session, "Invalid customer Id please enter correct customerId.");
+            return;
         }
     }
     else
